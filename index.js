@@ -17,47 +17,83 @@
  *    getGreatestBelow       O(log2(n))
  *    forEach                O(n * P) where P is the complexity of the processing function
  *    forEachReverse         O(n * P) where P is the complexity of the processing function
+ *    reposition             worst case in O(n), best case in O(1)
  *    toArray                O(n)
  *    clear                  O(n)
  *
  *    Memory Complexity in O(n)
  */
 
-function TreeNode(obj, container) {
+function TreeListNode(obj, container) {
 	this.object = obj;
 	this.height = 1;
-	this.left   = null;
-	this.right  = null;
-	this.parent = null;
+
+	this.left  = null;
+	this.right = null;
+
+	this.previous = null;
+	this.next     = null;
+
+	this.parent    = null;
 	this.container = container;
 }
 
-function AvlTree(comparisonFunction) {
+function AvlTreeList(comparisonFunction) {
 	this.length = 0;
-	this.root = null;
+
+	this.root  = null;
+	this.first = null;
+	this.last  = null;
+
 	this.cmpFunc = comparisonFunction;
 }
 
-AvlTree.prototype._addLeft = function (node, parent) {
+AvlTreeList.prototype._addLeft = function (node, parent) {
+	node.previous = parent.previous;
+	node.next = parent;
 	node.parent = parent;
+
 	parent.left = node;
+	parent.previous = node;
+
+	if (node.previous) {
+		node.previous.next = node;
+	}
+
+	if (parent === this.first) {
+		this.first = node;
+	}
 };
 
-AvlTree.prototype._addRight = function (node, parent) {
+AvlTreeList.prototype._addRight = function (node, parent) {
+	node.previous = parent;
+	node.next = parent.next;
 	node.parent = parent;
+
 	parent.right = node;
+	parent.next = node;
+
+	if (node.next) {
+		node.next.previous = node;
+	}
+
+	if (parent === this.last) {
+		this.last = node;
+	}
 };
 
-AvlTree.prototype.add = function (obj) {
+AvlTreeList.prototype.add = function (obj) {
 	this.length += 1;
-	var newNode = new TreeNode(obj, this);
+	var newNode = new TreeListNode(obj, this);
 	if (this.root === null) {
-		this.root = newNode;
+		this.root  = newNode;
+		this.first = newNode;
+		this.last  = newNode;
 		return newNode;
 	}
 
 	var current = this.root;
-	for (;;) {
+	while (true) {
 		var cmp = this.cmpFunc(obj, current.object);
 		if (cmp < 0) {
 			// Adding to the left
@@ -97,7 +133,7 @@ AvlTree.prototype.add = function (obj) {
 	return newNode;
 };
 
-AvlTree.prototype._balanceLeftRight = function (node) {
+AvlTreeList.prototype._balanceLeftRight = function (node) {
 	var left = node.left;
 	var a = left.left;
 	var b = left.right.left;
@@ -121,7 +157,7 @@ AvlTree.prototype._balanceLeftRight = function (node) {
 	left.height = leftLeft.height + 1;
 };
 
-AvlTree.prototype._balanceLeftLeft = function (node) {
+AvlTreeList.prototype._balanceLeftLeft = function (node) {
 	var left = node.left;
 	var c = left.right;
 
@@ -146,7 +182,7 @@ AvlTree.prototype._balanceLeftLeft = function (node) {
 	node.height = node.height - 1;
 };
 
-AvlTree.prototype._balanceRightLeft = function (node) {
+AvlTreeList.prototype._balanceRightLeft = function (node) {
 	var right = node.right;
 	var a = right.right;
 	var b = right.left.right;
@@ -171,7 +207,7 @@ AvlTree.prototype._balanceRightLeft = function (node) {
 };
 
 
-AvlTree.prototype._balanceRightRight = function (node) {
+AvlTreeList.prototype._balanceRightRight = function (node) {
 	var right = node.right;
 	var c = right.left;
 
@@ -196,7 +232,7 @@ AvlTree.prototype._balanceRightRight = function (node) {
 	node.height = node.height - 1;
 };
 
-AvlTree.prototype._balance = function (node) {
+AvlTreeList.prototype._balance = function (node) {
 	// Balancing the tree
 	var current = node;
 	while (current !== null) {
@@ -242,12 +278,23 @@ AvlTree.prototype._balance = function (node) {
 	}
 };
 
-AvlTree.prototype.removeByReference = function (node) {
+AvlTreeList.prototype.removeByReference = function (node) {
 	if (node.container !== this) {
 		return node;
 	}
 
 	this.length -= 1;
+
+	if (node.previous === null) {
+		this.first = node.next;
+	} else {
+		node.previous.next = node.next;
+	}
+	if (node.next === null) {
+		this.last = node.previous;
+	} else {
+		node.next.previous = node.previous;
+	}
 
 	// Replacing the node by the smallest element greater than it
 	var parent = node.parent;
@@ -344,7 +391,7 @@ AvlTree.prototype.removeByReference = function (node) {
 	return null;
 };
 
-AvlTree.prototype.getSmallestAbove = function (obj) {
+AvlTreeList.prototype.getSmallestAbove = function (obj) {
 	if (this.root === null) {
 		return null;
 	}
@@ -368,7 +415,7 @@ AvlTree.prototype.getSmallestAbove = function (obj) {
 	return smallestAbove;
 };
 
-AvlTree.prototype.getGreatestBelow = function (obj) {
+AvlTreeList.prototype.getGreatestBelow = function (obj) {
 	if (this.root === null) {
 		return null;
 	}
@@ -392,47 +439,82 @@ AvlTree.prototype.getGreatestBelow = function (obj) {
 	return greatestBelow;
 };
 
-AvlTree.prototype._forEach = function (node, processingFunc, params) {
-	if (node !== null) {
-		this._forEach(node.left, processingFunc, params);
-		processingFunc(node.object, params);
-		this._forEach(node.right, processingFunc, params);
+AvlTreeList.prototype.forEach = function (processingFunc, params) {
+	for (var current = this.first; current; current = current.next) {
+		processingFunc(current.object, params);
 	}
 };
 
-AvlTree.prototype.forEach = function (processingFunc, params) {
-	this._forEach(this.root, processingFunc, params);
-};
-
-AvlTree.prototype._forEachReverse = function (node, processingFunc, params) {
-	if (node !== null) {
-		this._forEach(node.right, processingFunc, params);
-		processingFunc(node.object, params);
-		this._forEach(node.left, processingFunc, params);
+AvlTreeList.prototype.forEachReverse = function (processingFunc, params) {
+	for (var current = this.last; current; current = current.previous) {
+		processingFunc(current.object, params);
 	}
 };
 
-AvlTree.prototype.forEachReverse = function (processingFunc, params) {
-	this._forEachReverse(this.root, processingFunc, params);
+function switchNodes(nodeA, nodeB) {
+	var objectA = nodeA.object;
+	var objectB = nodeB.object;
+	var referenceA = objectA._avlTreeListReference;
+	objectA._avlTreeListReference = objectB._avlTreeListReference;
+	objectB._avlTreeListReference = referenceA;
+
+	nodeA.object = objectB;
+	nodeB.object = objectA;
+}
+
+AvlTreeList.prototype.reposition = function (node) {
+	if (node.container !== this) {
+		console.warn('[AvlTreeList.reposition] Trying to reposition a node that does not belong to the list');
+		return;
+	}
+
+	var cmp;
+	var object = node.object;
+
+	// Switching place with nodes until correctly sorted
+
+	var previous = node.previous;
+	if (previous !== null) {
+		cmp = this.cmpFunc(object, previous.object);
+		if (cmp < 0) {
+			do {
+				switchNodes(node, previous);
+				node = previous;
+				previous = node.previous;
+				if (previous === null) { break; }
+				cmp = this.cmpFunc(object, previous.object);
+			} while (cmp < 0)
+			return;
+		}
+	}
+	
+	var next = node.next;
+	if (next !== null) {
+		cmp = this.cmpFunc(object, next.object);
+		if (cmp > 0) {
+			do {
+				switchNodes(node, next);
+				node = next;
+				next = next.next;
+				if (next === null) { break; }
+				cmp = this.cmpFunc(object, next.object);
+			} while (cmp > 0)
+			return;
+		}
+	}
 };
 
-AvlTree.prototype.clear = function () {
+AvlTreeList.prototype.toArray = function () {
+	var objects = [];
+	for (var current = this.first; current; current = current.next) {
+		objects.push(current.object);
+	}
+	return objects;
+};
+
+AvlTreeList.prototype.clear = function () {
 	this.length = 0;
 	this.root = null;
 };
 
-AvlTree.prototype._toArray = function (node, objects) {
-	if (node !== null) {
-		this._toArray(node.left, objects);
-		objects.push(node.object);
-		this._toArray(node.right, objects);
-	}
-};
-
-AvlTree.prototype.toArray = function () {
-	var objects = [];
-	this._toArray(this.root, objects);
-	return objects;
-};
-
-module.exports = AvlTree;
+module.exports = AvlTreeList;

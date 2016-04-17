@@ -1,7 +1,7 @@
 {
-  "name": "container-avltree",
+  "name": "container-avltreelist",
   "version": "0.1.0",
-  "description": "AvlTree implementation in JavaScript",
+  "description": "AvlTreeList implementation in JavaScript",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
