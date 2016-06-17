@@ -112,18 +112,12 @@ AvlTreeList.prototype.add = function (obj) {
 				current = current.right;
 			}
 		} else {
-			if (current.left === null) {
-				this._addLeft(newNode, current);
-				break;
-			} else if (current.right === null) {
+			// In case of equal comparison, adding to the right
+			if (current.right === null) {
 				this._addRight(newNode, current);
 				break;
 			} else {
-				if (current.right.height < current.left.height) {
-					current = current.right;
-				} else {
-					current = current.left;
-				}
+				current = current.right;
 			}
 		}
 	}
