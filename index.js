@@ -82,6 +82,18 @@ AvlTreeList.prototype._addRight = function (node, parent) {
 	}
 };
 
+AvlTreeList.prototype.popSmallest = function () {
+	var smallestNode = this.first;
+	this.removeByReference(smallestNode);
+	return smallestNode.object;
+};
+
+AvlTreeList.prototype.popGreatest = function () {
+	var greatestNode = this.last;
+	this.removeByReference(greatestNode);
+	return greatestNode.object;
+};
+
 AvlTreeList.prototype.add = function (obj) {
 	this.length += 1;
 	var newNode = new TreeListNode(obj, this);
