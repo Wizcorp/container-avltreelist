@@ -7,6 +7,29 @@ To manage a pool of sorted elements. **Complexity in O(log2(n)) for addition and
 Plus, **complexity in O(1)** in the best case **for repositioning an element** after updating its sorting property.
 This container is best used for managing a list of element sorted when the values of the ordering properties change slowly over time.
 
+## List of methods and their time complexity
+
+Method            | Time Complexity
+----------------- | -------------
+add               | O(log2(n))
+removeByReference | O(log2(n))
+getCount          | O(1)
+popSmallest       | O(log2(n))
+popGreatest       | O(log2(n))
+getSmallestAbove  | O(log2(n))
+getGreatestBelow  | O(log2(n))
+forEach           | O(n * p)
+forEachReverse    | O(n * p)
+toArray           | O(n)
+clear             | O(n)
+reposition        | best case in O(1), worst case in O(n)
+
+Where ```n``` is the number of elements in the tree and ```p``` the complexity of the process function
+
+
+## API usage
+
+
 To **instantiate** a new tree:
 ``` javascript
 // In this example, myTree will hold elements sorted by zIndex

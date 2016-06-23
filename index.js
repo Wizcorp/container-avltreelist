@@ -13,15 +13,19 @@
  *    add                    O(log2(n))
  *    removeByReference      O(log2(n))
  *    getCount               O(1)
+ *    popSmallest            O(log2(n))
+ *    popGreatest            O(log2(n))
  *    getSmallestAbove       O(log2(n))
  *    getGreatestBelow       O(log2(n))
- *    forEach                O(n * P) where P is the complexity of the processing function
- *    forEachReverse         O(n * P) where P is the complexity of the processing function
- *    reposition             worst case in O(n), best case in O(1)
+ *    forEach                O(n * p)
+ *    forEachReverse         O(n * p)
+ *    reposition             best case in O(1), worst case in O(n)
  *    toArray                O(n)
  *    clear                  O(n)
  *
  *    Memory Complexity in O(n)
+ *
+ *    Where ```n``` is the number of elements in the tree and ```p``` the complexity of the process function
  */
 
 function TreeListNode(obj, container) {
