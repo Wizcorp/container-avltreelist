@@ -24,7 +24,10 @@ toArray           | O(n)
 clear             | O(n)
 reposition        | best case in O(1), worst case in O(n)
 
-Where ```n``` is the number of elements in the tree and ```p``` the complexity of the process function
+Where:
+- ```n``` is the number of elements in the tree
+- ```p``` is the complexity of the process function.
+- ```m``` is the number of elements that compare similarly to the given element
 
 
 ## API usage
@@ -86,10 +89,11 @@ var nbElements = myTree.length;
 
 To **reposition an element whose sorting property changed**:
 ``` javascript
+var mTreey = new AvlTree(myComparisonFunction, 'avlTreeListReference'); // Setting the name of the property on which objects will keep their references
 myObject.zIndex = 9;
-myObject._avlTreeListReference = myTree.add(myObject);
-myObject.zIndex = 10; // sorting property (here zIndex) of element changed
-myTree.reposition(myObject); // repositioning object with respect to new sorting property value
+myObject.avlTreeListReference = myTree.add(myObject);
+myObject.zIndex = 10; // Sorting property (here zIndex) of element changed
+myTree.reposition(myObject); // Repositioning object with respect to new sorting property value, will use the property name defined when constructing the tree, i.e 'avlTreeListReference'
 ```
 **Note 1**: ```reposition``` method is in O(1) in the best case, and O(n) in worst case, depending on how much the value of sorting property changed.
 

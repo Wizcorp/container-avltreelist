@@ -5,27 +5,7 @@
  *
  * @param {function} comparisonFunction comparison function that takes two parameters a and b and returns a number
  *
- * @desc Avl Tree data structure, keep elements sorted, removal and insertion in O(log2(n))
- *
- *    Method                Time Complexity
- *    ___________________________________
- *
- *    add                    O(log2(n))
- *    removeByReference      O(log2(n))
- *    getCount               O(1)
- *    popSmallest            O(log2(n))
- *    popGreatest            O(log2(n))
- *    getSmallestAbove       O(log2(n))
- *    getGreatestBelow       O(log2(n))
- *    forEach                O(n * p)
- *    forEachReverse         O(n * p)
- *    reposition             best case in O(1), worst case in O(n)
- *    toArray                O(n)
- *    clear                  O(n)
- *
- *    Memory Complexity in O(n)
- *
- *    Where ```n``` is the number of elements in the tree and ```p``` the complexity of the process function
+ * @desc Avl Tree data structure, keep elements sorted and iterable as a linked list.
  */
 
 function TreeListNode(obj, container) {
@@ -42,7 +22,7 @@ function TreeListNode(obj, container) {
 	this.container = container;
 }
 
-function AvlTreeList(comparisonFunction) {
+function AvlTreeList(comparisonFunction, referencePropertyName) {
 	this.length = 0;
 
 	this.root  = null;
@@ -50,6 +30,8 @@ function AvlTreeList(comparisonFunction) {
 	this.last  = null;
 
 	this.cmpFunc = comparisonFunction;
+
+	this._referenceProperty = referencePropertyName;
 }
 
 AvlTreeList.prototype._addLeft = function (node, parent) {
@@ -461,12 +443,12 @@ AvlTreeList.prototype.forEachReverse = function (processingFunc, params) {
 	}
 };
 
-function switchNodes(nodeA, nodeB) {
+AvlTreeList.prototype._switchNodes = function (nodeA, nodeB) {
 	var objectA = nodeA.object;
 	var objectB = nodeB.object;
-	var referenceA = objectA._avlTreeListReference;
-	objectA._avlTreeListReference = objectB._avlTreeListReference;
-	objectB._avlTreeListReference = referenceA;
+	var referenceA = objectA[this._referenceProperty];
+	objectA[this._referenceProperty] = objectB[this._referenceProperty];
+	objectB[this._referenceProperty] = referenceA;
 
 	nodeA.object = objectB;
 	nodeB.object = objectA;
@@ -482,13 +464,12 @@ AvlTreeList.prototype.reposition = function (node) {
 	var object = node.object;
 
 	// Switching place with nodes until correctly sorted
-
 	var previous = node.previous;
 	if (previous !== null) {
 		cmp = this.cmpFunc(object, previous.object);
 		if (cmp < 0) {
 			do {
-				switchNodes(node, previous);
+				this._switchNodes(node, previous);
 				node = previous;
 				previous = node.previous;
 				if (previous === null) { break; }
@@ -503,7 +484,7 @@ AvlTreeList.prototype.reposition = function (node) {
 		cmp = this.cmpFunc(object, next.object);
 		if (cmp > 0) {
 			do {
-				switchNodes(node, next);
+				this._switchNodes(node, next);
 				node = next;
 				next = next.next;
 				if (next === null) { break; }
