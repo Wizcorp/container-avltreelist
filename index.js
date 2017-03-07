@@ -146,7 +146,8 @@ AvlTreeList.prototype._balanceLeftRight = function (node) {
 		b.parent = leftLeft;
 	}
 
-	left.height = leftLeft.height + 1;
+	updateHeight(node.left.left);
+	updateHeight(node.left);
 };
 
 AvlTreeList.prototype._balanceLeftLeft = function (node) {
@@ -171,7 +172,7 @@ AvlTreeList.prototype._balanceLeftLeft = function (node) {
 		c.parent = node;
 	}
 
-	node.height = node.height - 1;
+	updateHeight(node);
 };
 
 AvlTreeList.prototype._balanceRightLeft = function (node) {
@@ -195,7 +196,8 @@ AvlTreeList.prototype._balanceRightLeft = function (node) {
 		b.parent = rightRight;
 	}
 
-	node.right.height = rightRight.height + 1;
+	updateHeight(node.right.right);
+	updateHeight(node.right);
 };
 
 
@@ -221,7 +223,7 @@ AvlTreeList.prototype._balanceRightRight = function (node) {
 		c.parent = node;
 	}
 
-	node.height = node.height - 1;
+	updateHeight(node);
 };
 
 AvlTreeList.prototype._balance = function (node) {
@@ -232,40 +234,34 @@ AvlTreeList.prototype._balance = function (node) {
 		var rightHeight = (current.right === null) ? 0 : current.right.height;
 		var newHeight = 1 + Math.max(leftHeight, rightHeight);
 
-		if (newHeight > current.height) {
-			current.height = newHeight;
-			if (leftHeight - rightHeight > 1) {
-				// Left case
-				if (current.left.right !== null &&
-					(current.left.left === null || current.left.left.height < current.left.right.height)) {
-					// Left Right Case
-					this._balanceLeftRight(current);
-				}
-
-				// Left Left Case
-				this._balanceLeftLeft(current);
-
-				// The tree has been balanced
-				break;
-			} else if (rightHeight - leftHeight > 1) {
-				// Right case
-				if (current.right.left !== null &&
-					(current.right.right === null || current.right.right.height < current.right.left.height)) {
-					// Right Left Case
-					this._balanceRightLeft(current);
-				}
-
-				// Right Right Case
-				this._balanceRightRight(current);
-
-				// The tree has been balanced
-				break;
-			} else {
-				// TreeNode is balanced
-				current = current.parent;
+		current.height = newHeight;
+		if (leftHeight - rightHeight > 1) {
+			// Left case
+			if (current.left.right !== null &&
+				(current.left.left === null || current.left.left.height < current.left.right.height)) {
+				// Left Right Case
+				this._balanceLeftRight(current);
 			}
+
+			// Left Left Case
+			this._balanceLeftLeft(current);
+
+			// The tree has been balanced
+		} else if (rightHeight - leftHeight > 1) {
+			// Right case
+			if (current.right.left !== null &&
+				(current.right.right === null || current.right.right.height < current.right.left.height)) {
+				// Right Left Case
+				this._balanceRightLeft(current);
+			}
+
+			// Right Right Case
+			this._balanceRightRight(current);
+
+			// The tree has been balanced
 		} else {
-			break;
+			// TreeNode is balanced
+			current = current.parent;
 		}
 	}
 };
@@ -452,7 +448,7 @@ AvlTreeList.prototype._switchNodes = function (nodeA, nodeB) {
 
 	nodeA.object = objectB;
 	nodeB.object = objectA;
-}
+};
 
 AvlTreeList.prototype.reposition = function (node) {
 	if (node.container !== this) {
@@ -474,7 +470,7 @@ AvlTreeList.prototype.reposition = function (node) {
 				previous = node.previous;
 				if (previous === null) { break; }
 				cmp = this.cmpFunc(object, previous.object);
-			} while (cmp < 0)
+			} while (cmp < 0);
 			return;
 		}
 	}
@@ -489,7 +485,7 @@ AvlTreeList.prototype.reposition = function (node) {
 				next = next.next;
 				if (next === null) { break; }
 				cmp = this.cmpFunc(object, next.object);
-			} while (cmp > 0)
+			} while (cmp > 0);
 			return;
 		}
 	}
@@ -504,8 +500,32 @@ AvlTreeList.prototype.toArray = function () {
 };
 
 AvlTreeList.prototype.clear = function () {
+	this._clearEachNode(this.root);
 	this.length = 0;
 	this.root = null;
 };
+
+AvlTreeList.prototype._clearEachNode = function (node) {
+	if (node !== null) {
+		this._clearEachNode(node.left);
+		this._clearEachNode(node.right);
+		node.left   = null;
+		node.right  = null;
+		node.parent = null;
+		node.height = 1;
+		node.container = null;
+	}
+};
+
+function getHeight(node) {
+	if (node === null) {
+		return 0;
+	}
+	return node.height;
+}
+
+function updateHeight(node) {
+	node.height = Math.max(getHeight(node.left), getHeight(node.right)) + 1;
+}
 
 module.exports = AvlTreeList;
