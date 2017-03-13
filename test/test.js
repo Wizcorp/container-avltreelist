@@ -10,14 +10,83 @@ function sortLeftToRight(a, b) {
 	return 0;
 }
 
+function isBalanced(node) {
+	if (node === null) {
+		return true;
+	}
+
+	var heightLeft  = (node.left  === null) ? 0 : node.left.height;
+	var heightRight = (node.right === null) ? 0 : node.right.height;
+
+	if (Math.abs(heightLeft - heightRight) > 1 || node.height <= heightLeft || node.height <= heightRight) {
+		return false;
+	}
+
+	return isBalanced(node.left) && isBalanced(node.right);
+}
+
+function isTreeCountConsistent(tree) {
+	return getTreeCount(tree.root) === tree.length;
+}
+
+function isListCountConsistent(tree) {
+	return getListCount(tree) === tree.length;
+}
+
+function getTreeCount(node) {
+	if (node === null) {
+		return 0;
+	}
+
+	return 1 + getTreeCount(node.left) + getTreeCount(node.right);
+}
+
+function getListCount(tree) {
+	var first = tree.first;
+	var count = 0;
+	for (var current = first; current; current = current.next) {
+		count += 1;
+	}
+
+	return count;
+}
+
+function isTreeSorted(tree, node) {
+	if (node === null) {
+		return true;
+	}
+
+	var isSortedLeft  = (node.left  === null) || (tree.cmpFunc(node.left.object, node.object)  <= 0);
+	var isSortedRight = (node.right === null) || (tree.cmpFunc(node.object, node.right.object) <= 0);
+
+	return isSortedLeft && isSortedRight && isTreeSorted(tree, node.left) && isTreeSorted(tree, node.right);
+}
+
+function isListSorted(tree) {
+	var first = tree.first;
+	if (first === null) {
+		return true;
+	}
+
+	var previous = first.object;
+	for (var current = first.next; current !== null; current = current.next) {
+		if (tree.cmpFunc(previous, current.object) > 0) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 function assertTree(tree, nbElements) {
-	assert.strictEqual(tree._getListCount(), nbElements);
-	assert.strictEqual(tree._getTreeCount(), nbElements);
-	assert.strictEqual(tree._isTreeSorted(), true);
-	assert.strictEqual(tree._isListSorted(), true);
-	assert.strictEqual(tree._isTreeCountConsistent(), true);
-	assert.strictEqual(tree._isListCountConsistent(), true);
-	assert.strictEqual(tree._isBalanced(), true);
+	assert.strictEqual(getListCount(tree), nbElements);
+	assert.strictEqual(getTreeCount(tree.root), nbElements);
+	assert.strictEqual(isTreeSorted(tree, tree.root), true);
+	assert.strictEqual(isListSorted(tree), true);
+	assert.strictEqual(isTreeCountConsistent(tree), true);
+	assert.strictEqual(isListCountConsistent(tree), true);
+	assert.strictEqual(isBalanced(tree.root), true);
 }
 
 describe('continaer-avltreeList tests', function() {
